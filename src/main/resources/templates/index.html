@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Signature Positioning</title>
+    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.min.js"></script>
+</head>
+<body>
+<h1>Select Signature Position</h1>
+<canvas id="pdfCanvas" width="600" height="800"></canvas>
+<button onclick="getSelectedPosition()">Get Selected Position</button>
+
+<script>
+
+        let pdfDoc = null;
+        let pageNum = 1;
+
+        // Function to load PDF document
+        function loadPDF(url) {
+            pdfjsLib.getDocument(url).promise.then(pdfDocument => {
+                pdfDoc = pdfDocument;
+                renderPage(pageNum);
+            });
+        }
+
+        // Function to render a page
+        function renderPage(num) {
+            pdfDoc.getPage(num).then(page => {
+                const canvas = document.getElementById('pdfCanvas');
+                const context = canvas.getContext('2d');
+                const viewport = page.getViewport({ scale: 1.5 });
+
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+
+                page.render(renderContext);
+            });
+        }
+
+        // Function to get selected position
+        function getSelectedPosition() {
+            const canvas = document.getElementById('pdfCanvas');
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const selectedX = Math.floor(mouseX * scaleX);
+            const selectedY = Math.floor(mouseY * scaleY);
+
+            console.log('Selected Position:', selectedX, selectedY);
+        }
+
+        loadPDF('./output_signed.pdf');
+    </script>
+</body>
+</html>
